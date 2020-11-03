@@ -3,10 +3,7 @@ package com.vocabsvc.wordtrainer.model;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.ArrayList;
 
 @Setter
@@ -15,6 +12,9 @@ import java.util.ArrayList;
 @Table
 public class Word {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+
     @Column
     private String name;
 
