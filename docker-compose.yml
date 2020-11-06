@@ -1,0 +1,28 @@
+version: '3.3'
+
+services:
+  postgres:
+    image: postgres:latest
+    restart: unless-stopped
+    env_file:
+      - postgres.env
+    ports:
+      - 3000:5432
+    networks:
+      - backend
+    volumes:
+      - ./postgres-data:/data/db
+
+  vocab:
+    image: word-trainer:latest
+    env_file:
+      - vocab.env
+    ports:
+      - 3003:3003
+    depends_on:
+      - postgres
+    networks:
+      - backend
+
+networks:
+  backend:
