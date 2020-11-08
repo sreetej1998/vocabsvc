@@ -24,26 +24,26 @@ public class WordController {
   public ResponseEntity<List<WordPayload>> getAllWords() {
     List<Word> words = wordService.getAllWords();
     List<WordPayload> wordPayloads =
-        words.stream().map(word -> convertToDto(word)).collect(Collectors.toList());
+        words.stream().map(word -> convertToDTO(word)).collect(Collectors.toList());
     return new ResponseEntity<>(wordPayloads, HttpStatus.OK);
   }
 
   @GetMapping("/words/{wordId}")
   public ResponseEntity<WordPayload> getWord(@PathVariable long wordId) {
-    return new ResponseEntity<>(convertToDto(wordService.getWord(wordId)), HttpStatus.OK);
+    return new ResponseEntity<>(convertToDTO(wordService.getWord(wordId)), HttpStatus.OK);
   }
 
   @PostMapping("/words")
   public ResponseEntity<WordPayload> createWord(@Valid @RequestBody WordPayload wordPayload) {
     return new ResponseEntity<>(
-        convertToDto(wordService.createWord(convertToEntity(wordPayload))), HttpStatus.CREATED);
+        convertToDTO(wordService.createWord(convertToEntity(wordPayload))), HttpStatus.CREATED);
   }
 
   @PutMapping("/words/{wordId}")
   public ResponseEntity<WordPayload> updateWord(
       @PathVariable long wordId, @Valid @RequestBody WordPayload wordPayload) {
     return new ResponseEntity<>(
-        convertToDto(wordService.updateWord(wordId, convertToEntity(wordPayload))), HttpStatus.OK);
+        convertToDTO(wordService.updateWord(wordId, convertToEntity(wordPayload))), HttpStatus.OK);
   }
 
   @DeleteMapping("/words/{wordId}")
@@ -56,7 +56,7 @@ public class WordController {
     return modelMapper.map(wordPayload, Word.class);
   }
 
-  public WordPayload convertToDto(Word word) {
+  public WordPayload convertToDTO(Word word) {
     return modelMapper.map(word, WordPayload.class);
   }
 }

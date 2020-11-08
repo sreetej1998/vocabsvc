@@ -6,6 +6,8 @@ import com.vocabsvc.wordtrainer.model.User;
 import com.vocabsvc.wordtrainer.model.Word;
 import com.vocabsvc.wordtrainer.service.UserService;
 import java.text.ParseException;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,25 +27,43 @@ public class UserController {
   public ResponseEntity<UserPayload> createUser(@Valid @RequestBody UserPayload userPayload)
       throws ParseException {
     User user = userService.createUser(convertToEntity(userPayload));
-    return new ResponseEntity<UserPayload>(convertToDto(user), HttpStatus.CREATED);
+    return new ResponseEntity<UserPayload>(convertToDTO(user), HttpStatus.CREATED);
   }
 
   @PutMapping("/users/{userId}/words/{wordId}")
   public ResponseEntity<WordPayload> addWordToUser(
       @PathVariable long userId, @PathVariable long wordId) {
     return new ResponseEntity<>(
-        convertToWordDto(userService.addWordToUser(userId, wordId)), HttpStatus.OK);
+        convertToWordDTO(userService.addWordToUser(userId, wordId)), HttpStatus.OK);
+  }
+
+  @PutMapping("/users/{userId}/words")
+  public ResponseEntity<List<WordPayload>> addWordsToUser(
+      @Valid @RequestBody List<WordPayload> wordPayloadList, @PathVariable long userId) {
+    List<Word> words =
+        wordPayloadList.stream()
+            .map(wordPayload -> convertToWordEntity(wordPayload))
+            .collect(Collectors.toList());
+    List<WordPayload> wordPayloads =
+        userService.addWords(userId, words).stream()
+            .map(word -> convertToWordDTO(word))
+            .collect(Collectors.toList());
+    return new ResponseEntity<>(wordPayloads, HttpStatus.OK);
   }
 
   public User convertToEntity(UserPayload userPayload) {
     return modelMapper.map(userPayload, User.class);
   }
 
-  public UserPayload convertToDto(User user) {
+  public UserPayload convertToDTO(User user) {
     return modelMapper.map(user, UserPayload.class);
   }
 
-  public WordPayload convertToWordDto(Word word) {
+  public WordPayload convertToWordDTO(Word word) {
     return modelMapper.map(word, WordPayload.class);
+  }
+
+  public Word convertToWordEntity(WordPayload wordPayload) {
+    return modelMapper.map(wordPayload, Word.class);
   }
 }
