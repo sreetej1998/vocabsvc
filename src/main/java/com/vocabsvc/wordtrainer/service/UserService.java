@@ -1,7 +1,8 @@
 package com.vocabsvc.wordtrainer.service;
 
-import com.vocabsvc.wordtrainer.model.Users;
-import com.vocabsvc.wordtrainer.repository.UsersRepository;
+import com.vocabsvc.wordtrainer.model.User;
+import com.vocabsvc.wordtrainer.model.Word;
+import com.vocabsvc.wordtrainer.repository.UserRepository;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,10 +13,20 @@ import org.springframework.stereotype.Service;
 @Setter
 public class UserService {
 
-    @Autowired
-    UsersRepository usersRepository;
+  @Autowired
+  UserRepository userRepository;
 
-    public Users createUser(Users user) {
-        return usersRepository.save(user);
-    }
+  @Autowired WordService wordService;
+
+  public User createUser(User user) {
+    return userRepository.save(user);
+  }
+
+  public Word addWordToUser(long wordId, long userId) {
+    Word word = wordService.getWord(wordId);
+    User user = userRepository.findById(userId).get();
+    user.getWords().add(word);
+    userRepository.save(user);
+    return word;
+  }
 }

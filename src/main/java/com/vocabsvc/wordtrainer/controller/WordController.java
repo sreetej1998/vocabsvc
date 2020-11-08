@@ -1,43 +1,62 @@
 package com.vocabsvc.wordtrainer.controller;
 
+import com.vocabsvc.wordtrainer.dto.WordPayload;
 import com.vocabsvc.wordtrainer.model.Word;
 import com.vocabsvc.wordtrainer.service.WordService;
+import java.util.List;
+import java.util.stream.Collectors;
+import javax.validation.Valid;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
+@RequestMapping("/api")
 public class WordController {
 
-    @Autowired
-    WordService wordService;
+  @Autowired WordService wordService;
 
-    @GetMapping("/words")
-    public ResponseEntity<List<Word>> getAllWords() {
-        return new ResponseEntity<>(wordService.getAllWords(), HttpStatus.OK);
-    }
+  @Autowired ModelMapper modelMapper;
 
-    @GetMapping("/words/{wordId}")
-    public ResponseEntity<Word> getWord(@PathVariable long wordId) {
-        return new ResponseEntity<>(wordService.getWord(wordId), HttpStatus.OK);
-    }
+  @GetMapping("/words")
+  public ResponseEntity<List<WordPayload>> getAllWords() {
+    List<Word> words = wordService.getAllWords();
+    List<WordPayload> wordPayloads =
+        words.stream().map(word -> convertToDto(word)).collect(Collectors.toList());
+    return new ResponseEntity<>(wordPayloads, HttpStatus.OK);
+  }
 
-    @PostMapping("/words")
-    public ResponseEntity<Word> createWord(@RequestBody Word word) {
-        return new ResponseEntity<>(wordService.createWord(word), HttpStatus.CREATED);
-    }
+  @GetMapping("/words/{wordId}")
+  public ResponseEntity<WordPayload> getWord(@PathVariable long wordId) {
+    return new ResponseEntity<>(convertToDto(wordService.getWord(wordId)), HttpStatus.OK);
+  }
 
-    @PutMapping("/words/{wordId}")
-    public ResponseEntity<Word> updateWord(@PathVariable long wordId, @RequestBody Word word ) {
-        return new ResponseEntity<>(wordService.updateWord(wordId, word), HttpStatus.OK);
-    }
+  @PostMapping("/words")
+  public ResponseEntity<WordPayload> createWord(@Valid @RequestBody WordPayload wordPayload) {
+    return new ResponseEntity<>(
+        convertToDto(wordService.createWord(convertToEntity(wordPayload))), HttpStatus.CREATED);
+  }
 
-    @DeleteMapping("/words/{wordId}")
-    public ResponseEntity deleteWord(@PathVariable long wordId) {
-        wordService.deleteWord(wordId);
-        return new ResponseEntity(HttpStatus.OK);
-    }
+  @PutMapping("/words/{wordId}")
+  public ResponseEntity<WordPayload> updateWord(
+      @PathVariable long wordId, @Valid @RequestBody WordPayload wordPayload) {
+    return new ResponseEntity<>(
+        convertToDto(wordService.updateWord(wordId, convertToEntity(wordPayload))), HttpStatus.OK);
+  }
+
+  @DeleteMapping("/words/{wordId}")
+  public ResponseEntity deleteWord(@PathVariable long wordId) {
+    wordService.deleteWord(wordId);
+    return new ResponseEntity(HttpStatus.OK);
+  }
+
+  public Word convertToEntity(WordPayload wordPayload) {
+    return modelMapper.map(wordPayload, Word.class);
+  }
+
+  public WordPayload convertToDto(Word word) {
+    return modelMapper.map(word, WordPayload.class);
+  }
 }
